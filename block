@@ -1,0 +1,206 @@
+
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <cctype>
+
+using namespace std;
+const unsigned N = 200;
+
+char ogr; 
+struct my_struct
+{
+	char stroka[N + 1];
+	char mark;
+	char stroka2[N + 1];
+};
+
+void inp1(my_struct &st)
+{
+	ifstream fin; ofstream fout;
+	int i = 0;
+	int j = 0;
+	fin.open("in1.txt");
+	fout.open("out.txt");
+	if (!fin.is_open()) 
+	{ 
+		cout << "Ошибка при открытии файла для чтения!!!"; 
+		if (fout.is_open()) fout << "Ошибка при открытии файла для чтения!!!";
+		else cout << "Ошибка при открытии файла для записи";
+	}
+	else
+	{
+		fin.unsetf(ios::skipws);
+		fin >> st.mark;
+		fin.setf(ios::skipws);
+		fin >> ogr;
+		fin.unsetf(ios::skipws);
+
+		while (i < N)
+		{
+			fin >> st.stroka[i];
+			if ((st.stroka[i] == st.mark) || (st.stroka[i] == ogr) || (st.stroka[i] == '\n') || (fin.eof()))
+			{
+				st.stroka[i] = st.mark;
+				break;
+			}
+			i++;
+		}
+		
+	}
+	fin.close();
+	fout.close();
+}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+void inp2(my_struct &st)
+{
+
+	ifstream fin2; ofstream fout;
+	fin2.open("in2.txt");
+	fout.open("out.txt");
+	int kol;
+	if (!fin2.is_open())
+	{
+		cout << "Ошибка при открытии файла для чтения!";
+		if (fout.is_open()) cout << "Ошибка при открытии файла для чтения";
+		else cout << "Ошибка при открытии файла для записи ";
+	}
+	else
+	{
+		fin2.unsetf(ios::skipws);
+		fin2 >> st.mark;
+		cout <<"Маркер: " << st.mark << endl;
+		fin2.setf(ios::skipws);
+		fin2 >> kol;
+		cout << "Заданное количество символов: " << kol << endl;
+		fout << "Заданное количество символов: " << kol;
+		if (kol < 0)
+		{
+			kol = 0;
+			cout << "Некорректное заданное число скорректировано в 0";
+			fout << "Некорректное заданное число скорректировано в 0";
+		}
+		else
+		{
+			if (kol > N)
+			{
+				kol = N;
+				cout << "Заданное количество слов скорректировано в N";
+				fout << "Заданное количество слов скорректировано в N";
+			}
+			else
+			{
+				fin2.unsetf(ios::skipws); int i = 0;
+				while (1)
+				{
+					fin2 >> st.stroka[i];
+					if ((st.stroka[i] == st.mark) || (st.stroka[i] == '\n') || (fin2.eof()))
+					{
+						st.stroka[i] = st.mark;
+						break;
+					}
+					i++;
+				}
+			}
+		}
+	}
+	fin2.close();
+	fout.close();
+}
+
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+void processing(char skobka, my_struct &st) 
+{
+	char skobka2;
+	if (skobka == '[') skobka2 = ']';
+	if (skobka == '{') skobka2 = '}';
+	if (skobka == '(') skobka2 = ')';
+	unsigned j = 0;
+	unsigned i = 0;
+	
+	while (!(st.stroka[j] == st.mark))                   
+	{
+		st.stroka2[j] = st.stroka[i];
+		i++; j++;
+		
+		if (st.stroka[i] == skobka)
+		{
+			st.stroka2[j] = st.stroka[i];
+			i++; j++;
+			while (1)
+			{
+				i++;
+				if ((st.stroka[i] == skobka2) || (st.stroka[i] == st.mark)) break;
+			}
+			if (!(st.stroka[i] == skobka2))
+			{
+				for (j = j; j < i; j++) st.stroka2[j] = st.stroka[j]; //ДОРАБОАТЬ ШОБ ПРИ ОТКРЫВАЮЩЕЙСЯ СКОБКЕ, НО НЕНАЙДЕННОЙ ЗАКРЫВАЮЩЕЙСЯ ВЫВОДИЛО ИСХОДНУЮ СТРОКУ
+			}
+			
+		}
+	}
+	st.stroka2[j] = st.mark;
+}
+
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+void output(my_struct st, ofstream &fout)
+{
+	fout.open("out.txt");
+	cout << "введенная строка: ";
+	fout << "введенная строка: ";
+	for (int i = 0; i < N; i++)
+	{
+		cout << st.stroka[i];
+		fout << st.stroka[i];
+		if (st.stroka[i] == st.mark) break;
+	}
+	cout << endl << "Обработанная строка: ";
+	fout << endl << "Обработанная строка: ";
+	for (int j = 0; j < N; j++)
+	{
+		cout << st.stroka2[j];
+		fout << st.stroka2[j];
+		if (st.stroka2[j] == st.mark) break;
+	}
+	fout.close();
+}
+
+int main()
+{
+	setlocale(LC_ALL, "russian");
+	cout << "Автор: Ражапов Денис Вадитович" << endl << "Дата разработки 01.03.2022" << endl << "Задание: удалить все символы между скобками\n";
+	char skob; ofstream fout;
+	my_struct st;
+	int vvodsk;
+
+	cout << "Выберите вариант ввода: 1 - ограничитель, 2 - длина\n";
+	cin >> vvodsk;
+	while (1)
+	{
+		if (!((vvodsk == 1) || (vvodsk == 2))) cout << "Введите правильный вариант ввода еще раз\n";
+		else break;
+		cin >> vvodsk;
+	}
+	cout << "Задайте скобку: ";
+	cin >> skob;
+	while (1)
+	{
+		if (!((skob == '[') || (skob == '{') || (skob == '('))) cout << "Задайте скобку еще раз\n";
+		else break;
+		cin >> skob;
+	}
+	
+
+	if (vvodsk == 1) inp1(st);
+	else inp2(st);
+	
+	
+	processing(skob, st); 
+	output(st, fout);
+	
+	return 0;
+}
